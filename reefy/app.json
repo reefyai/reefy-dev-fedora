@@ -5,7 +5,6 @@
   "icon": "/static/icons/dev-fedora.png",
   "description": "Fedora 45 development environment with systemd, KVM passthrough, and host /dev",
   "image": "ghcr.io/reefyai/reefy-dev-fedora:45-2026.04.27-1",
-  "default_port": 8080,
   "privileged": true,
   "devices": [
     "/dev/kvm"
