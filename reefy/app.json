@@ -1,0 +1,47 @@
+{
+  "slug": "dev-fedora",
+  "version": "45",
+  "name": "Dev Fedora",
+  "icon": "/static/icons/dev-fedora.png",
+  "description": "Fedora 45 development environment with systemd, KVM passthrough, and host /dev",
+  "image": "ghcr.io/reefyai/reefy-dev-fedora:45",
+  "default_port": 8080,
+  "privileged": true,
+  "devices": [
+    "/dev/kvm"
+  ],
+  "host_mounts": [
+    "/dev:/dev",
+    "/sys/fs/cgroup:/sys/fs/cgroup:rw"
+  ],
+  "tmpfs": [
+    "/run",
+    "/tmp"
+  ],
+  "cgroupns": "host",
+  "volumes": {
+    "home": {
+      "mount": "/root",
+      "uid": 0,
+      "backup": [
+        "borgbase"
+      ]
+    },
+    "build": {
+      "mount": "/build",
+      "uid": 0
+    },
+    "docker": {
+      "mount": "/var/lib/docker",
+      "uid": 0
+    },
+    "containerd": {
+      "mount": "/var/lib/containerd",
+      "uid": 0
+    }
+  },
+  "env": {},
+  "tags": [
+    "dev"
+  ]
+}
