@@ -22,9 +22,9 @@ ENV container=docker
 
 RUN dnf -y install \
         systemd \
-        sudo less vim jq curl tmux nano \
+        sudo less vim jq curl tmux nano git \
         iproute iputils procps-ng net-tools \
-        ca-certificates openssh-clients \
+        ca-certificates openssh-clients openssh-server \
     && dnf clean all \
     && rm -rf /var/cache/dnf /tmp/* /var/tmp/*
 
