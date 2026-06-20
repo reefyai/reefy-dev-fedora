@@ -14,7 +14,8 @@ LABEL org.opencontainers.image.title="reefy-dev-fedora" \
       org.opencontainers.image.description="Fedora 45 with systemd as PID 1. Base image for the dev-fedora app on https://reefy.ai" \
       org.opencontainers.image.licenses="MIT"
 
-ENV container=docker
+ENV container=docker \
+    SHELL=/bin/bash
 
 # Single big dnf RUN so all packages share one layer (smaller image).
 # Categories mirror the reefy-dev-ubuntu Dockerfile:
@@ -49,6 +50,34 @@ RUN curl --retry 5 --retry-delay 5 --retry-all-errors --retry-max-time 300 \
         -o /usr/local/bin/sops \
     && chmod +x /usr/local/bin/sops
 
+# Codex CLI. Install the pinned standalone musl binary instead of npm so
+# the image does not need Node.js just to run Codex. Authentication and
+# user configuration live under the persistent /root volume at runtime.
+ARG CODEX_VERSION=0.141.0
+ARG TARGETARCH
+RUN case "${TARGETARCH}" in \
+        amd64) \
+            codex_arch=x86_64; \
+            codex_sha=f1e2bf9fa0ba6eb82119d621b6b71bc38edd33c06dc2867b31a027052358957d \
+            ;; \
+        arm64) \
+            codex_arch=aarch64; \
+            codex_sha=8c9f31811d659fcc17c5f1a21bc0971984469c9e3a63c2b39b61cc7694f3a101 \
+            ;; \
+        *) echo "Unsupported architecture: ${TARGETARCH}" >&2; exit 1 ;; \
+    esac \
+    && archive="codex-${codex_arch}-unknown-linux-musl.tar.gz" \
+    && curl --retry 5 --retry-delay 5 --retry-all-errors --retry-max-time 300 \
+        -fsSL "https://github.com/openai/codex/releases/download/rust-v${CODEX_VERSION}/${archive}" \
+        -o /tmp/codex.tar.gz \
+    && echo "${codex_sha}  /tmp/codex.tar.gz" | sha256sum -c - \
+    && tar -xzf /tmp/codex.tar.gz -C /tmp \
+    && install -m 0755 "/tmp/codex-${codex_arch}-unknown-linux-musl" \
+        /usr/local/bin/codex \
+    && codex --version \
+    && rm -f /tmp/codex.tar.gz \
+        "/tmp/codex-${codex_arch}-unknown-linux-musl"
+
 # Prune systemd units that don't belong in a container. Same idea as
 # reefy-dev-ubuntu: drop auto-started units that try to talk to kernel
 # subsystems that aren't there in a container (initctl, plymouth, udev
@@ -66,7 +95,7 @@ RUN rm -f /lib/systemd/system/multi-user.target.wants/* \
     /lib/systemd/system/systemd-update-utmp*
 
 # /sys/fs/cgroup is bind-mounted from the host at runtime via
-# host_mounts in apps/dev-fedora/app.json; declaring as VOLUME makes
+# host_mounts in reefy/app.json; declaring as VOLUME makes
 # `docker run` complain less if the mount is missing.
 VOLUME [ "/sys/fs/cgroup" ]
 
