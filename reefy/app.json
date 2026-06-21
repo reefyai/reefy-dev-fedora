@@ -22,7 +22,7 @@
   ],
   "tmpfs": [
     "/run",
-    "/tmp"
+    "/tmp:exec,mode=1777"
   ],
   "cgroupns": "host",
   "volumes": {
