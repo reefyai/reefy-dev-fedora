@@ -1,16 +1,16 @@
 {
   "slug": "dev-fedora",
-  "version": "45-2026.06.21-7",
+  "version": "45-2026.06.21-8",
   "name": "Dev Fedora",
   "icon": "/static/icons/dev-fedora.png",
   "description": "Fedora 45 development environment with systemd, KVM passthrough, and host /dev",
-  "image": "ghcr.io/reefyai/reefy-dev-fedora:45-2026.06.21-7",
+  "image": "ghcr.io/reefyai/reefy-dev-fedora:45-2026.06.21-8",
   "releases": [
+    "ghcr.io/reefyai/reefy-dev-fedora:45-2026.06.21-8",
     "ghcr.io/reefyai/reefy-dev-fedora:45-2026.06.21-7",
     "ghcr.io/reefyai/reefy-dev-fedora:45-2026.06.20-6",
     "ghcr.io/reefyai/reefy-dev-fedora:45-2026.05.10-5",
-    "ghcr.io/reefyai/reefy-dev-fedora:45-2026.05.09-4",
-    "ghcr.io/reefyai/reefy-dev-fedora:45-2026.04.27-1"
+    "ghcr.io/reefyai/reefy-dev-fedora:45-2026.05.09-4"
   ],
   "privileged": true,
   "gpu": true,
