@@ -78,6 +78,31 @@ RUN case "${TARGETARCH}" in \
     && rm -f /tmp/codex.tar.gz \
         "/tmp/codex-${codex_arch}-unknown-linux-musl"
 
+# OpenCode. The upstream installer writes to $HOME/.opencode/bin, but
+# /root is a persistent runtime volume for this app and would hide files
+# baked into the image. Install through a temporary HOME, then copy the
+# binary into /usr/local and wrap it with an executable temp directory
+# outside /tmp for render libraries that dlopen extracted .so files.
+ARG OPENCODE_VERSION=1.17.9
+RUN mkdir -p /usr/local/lib/opencode /var/tmp/opencode \
+    && HOME=/tmp/opencode-home TMPDIR=/var/tmp/opencode \
+        curl --retry 5 --retry-delay 5 --retry-all-errors --retry-max-time 300 \
+        -fsSL https://opencode.ai/install \
+        | HOME=/tmp/opencode-home TMPDIR=/var/tmp/opencode \
+          bash -s -- --version "${OPENCODE_VERSION}" --no-modify-path \
+    && install -m 0755 /tmp/opencode-home/.opencode/bin/opencode \
+        /usr/local/lib/opencode/opencode \
+    && printf '%s\n' \
+        '#!/usr/bin/env bash' \
+        'set -euo pipefail' \
+        'export TMPDIR="${OPENCODE_TMPDIR:-/var/tmp/opencode}"' \
+        'mkdir -p "$TMPDIR"' \
+        'exec /usr/local/lib/opencode/opencode "$@"' \
+        > /usr/local/bin/opencode \
+    && chmod 0755 /usr/local/bin/opencode \
+    && opencode --version \
+    && rm -rf /tmp/opencode-home /var/tmp/opencode/*
+
 # Prune systemd units that don't belong in a container. Same idea as
 # reefy-dev-ubuntu: drop auto-started units that try to talk to kernel
 # subsystems that aren't there in a container (initctl, plymouth, udev
