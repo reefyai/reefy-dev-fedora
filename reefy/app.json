@@ -29,6 +29,10 @@
   "volumes": {
     "home": {
       "mount": "/root",
+      "uid": 0
+    },
+    "backup": {
+      "mount": "/backup",
       "uid": 0,
       "backup": [
         "borgbase"
